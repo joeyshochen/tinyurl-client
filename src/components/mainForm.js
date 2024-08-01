@@ -2,17 +2,49 @@ import React from 'react';
 import { Button, Form } from "react-bootstrap";
 import axios from 'axios';
 import { tinyUrlServer } from '../secrets/config';
+import { isValidUrl } from '../helpers/helpers';
 
-export const MainForm = React.memo(() => {
+export const MainForm = React.memo(({setSubmissionCompleted, srcUrl, setSrcUrl, alias, setAlias}) => {
         const [srcUrlDirty, setSrcUrlDirty] = React.useState(false);
-        const [srcUrl, setSrcUrl] = React.useState('');
         const [srcUrlValidationMsg, setSrcUrlValidationMsg] = React.useState('');
         const [aliasDirty, setAliasDirty] = React.useState(false);
-        const [alias, setAlias] = React.useState('');
         const [aliasValidationMsg, setAliasValidationMsg] = React.useState('');
 
-        const formSubmitOnClick = React.useCallback((event) => {
+        const formSubmitOnClick = React.useCallback(async () => {
+                if (!srcUrl) {
+                        setSrcUrlDirty(true);
+                        setSrcUrlValidationMsg('The URL is missing.')
+                }
+
+                if (!alias) {
+                        setAliasDirty(true);
+                        setAliasValidationMsg('The alias is missing.')
+                }
+
+                if (!srcUrl || !alias) {
+                        return;
+                }
+
                 if (!srcUrlDirty && srcUrl && !aliasDirty && alias) {
+                        const validUrl = isValidUrl(srcUrl);
+
+                        if (!validUrl) {
+                                setSrcUrlDirty(true);
+                                setSrcUrlValidationMsg('This URL is not valid.')
+                                return;
+                        }
+
+                        const result = await axios.get(`${tinyUrlServer}/getAlias/${alias}`)
+                        .catch(error => {
+                                console.log(error);
+                        })
+
+                        if (result?.data !== 'Not found') {
+                                setAliasDirty(true);
+                                setAliasValidationMsg('This alias is already in use. Please choose another.')
+                                return;
+                        }
+
                         axios.post(`${tinyUrlServer}/create-tinyurl`,
                                 {
                                         srcUrl,
@@ -23,8 +55,10 @@ export const MainForm = React.memo(() => {
                         }).then(result => {
                                 console.log(result);
                         })
+
+                        setSubmissionCompleted(true);
                 }
-        }, [alias, aliasDirty, srcUrl, srcUrlDirty]);
+        }, [alias, aliasDirty, srcUrl, srcUrlDirty, setSubmissionCompleted]);
 
         const srcUrlOnChange = React.useCallback((event) => {
                 setSrcUrl(event?.target?.value)
@@ -49,11 +83,7 @@ export const MainForm = React.memo(() => {
 
         React.useEffect(() => {
                 if (alias) {
-                        // if (!alias.match(/a-zA-Z0-9/i)) {
-                        //         setAliasDirty(true)
-                        //         setAliasValidationMsg('SpinRate is not a number');
-                        //         return;
-                        // }
+                        
                 }
 
                 setAliasDirty(false);
@@ -64,9 +94,8 @@ export const MainForm = React.memo(() => {
                 <div className='container' style={{ maxWidth: 500 }}>
                         <h2>TinyURL</h2>
                         <p className='lead'>Create an alias that can be used for your URL to shorten it.</p>
-                        <Form validated={srcUrl && aliasDirty}>
-                                <Form.Group className='mb3'>
-                                        {/* <InputGroup hasValidation> */}
+                        <Form validated={!srcUrlDirty && !aliasDirty && srcUrl && alias}>
+                                <Form.Group className='mb-3'>
                                         <Form.Label>Shorten a long url</Form.Label>
                                         <Form.Control
                                                 type="url"
@@ -75,11 +104,9 @@ export const MainForm = React.memo(() => {
                                                 onChange={srcUrlOnChange}
                                         />
                                         <Form.Control.Feedback type='invalid'>{srcUrlValidationMsg}</Form.Control.Feedback>
-                                        {/* </InputGroup> */}
                                 </Form.Group>
 
                                 <Form.Group>
-                                        {/* <InputGroup hasValidation> */}
                                         <Form.Label>Customize Your Link</Form.Label>
                                         <Form.Control
                                                 type="text"
@@ -88,10 +115,9 @@ export const MainForm = React.memo(() => {
                                                 onChange={aliasOnChange}
                                         />
                                         <Form.Control.Feedback type='invalid'>{aliasValidationMsg}</Form.Control.Feedback>
-                                        {/* </InputGroup> */}
                                 </Form.Group>
 
-                                <Button type='button' className='btn btn-primary mb-3' onClick={formSubmitOnClick}>Submit</Button>
+                                <Button type='button' className='btn btn-primary' style={{marginTop: 10}} onClick={formSubmitOnClick}>Create your link</Button>
                         </Form>
                 </div>
         )

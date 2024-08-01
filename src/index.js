@@ -5,20 +5,10 @@ import App from './App';
 import {
         createBrowserRouter,
         RouterProvider,
-        // Route
+        useParams
 } from 'react-router-dom';
 import { NavBar } from './components/navbar';
-// import axios from 'axios';
-// import { tinyUrlServer } from './secrets/config';
-
-// const redirect = async ({params}) => {
-//         axios.get(`${tinyUrlServer}/${params.id}`
-//         ).catch(error => {
-//                 console.log(error);
-//         }).then(result => {
-//                 console.log(result);
-//         })
-// }
+import { tinyUrlServer } from './secrets/config';
 
 const router = createBrowserRouter([
         {
@@ -28,10 +18,18 @@ const router = createBrowserRouter([
         {
                 path: '/:id',
                 Component: () => {
-                        console.log("hello123");
-                        window.location.href = 'http://localhost:3001/123';
-                                return null;
+                        const { id } = useParams();
+                        window.location.href = tinyUrlServer + id;
+                        return null;
                 }
+        },
+        {
+                path: '/myURLs',
+                element: <p>myURLS</p>
+        },
+        {
+                path: '*',
+                element: <h1>404 Not Found</h1>
         }
 ]);
 
