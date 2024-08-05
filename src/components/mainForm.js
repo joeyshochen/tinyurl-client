@@ -23,9 +23,9 @@ export const MainForm = React.memo(({setSubmissionCompleted, srcUrl, setSrcUrl, 
 
                 if (!srcUrl || !alias) {
                         return;
-                }
+                } 
 
-                if (!srcUrlDirty && srcUrl && !aliasDirty && alias) {
+                if (srcUrl && alias) {
                         const validUrl = isValidUrl(srcUrl);
 
                         if (!validUrl) {
@@ -34,7 +34,7 @@ export const MainForm = React.memo(({setSubmissionCompleted, srcUrl, setSrcUrl, 
                                 return;
                         }
 
-                        const result = await axios.get(`${tinyUrlServer}/getAlias/${alias}`)
+                        const result = await axios.get(`${tinyUrlServer}/api/getAlias/${alias}`)
                         .catch(error => {
                                 console.log(error);
                         })
@@ -45,7 +45,7 @@ export const MainForm = React.memo(({setSubmissionCompleted, srcUrl, setSrcUrl, 
                                 return;
                         }
 
-                        axios.post(`${tinyUrlServer}/create-tinyurl`,
+                        axios.post(`${tinyUrlServer}/api/create-tinyurl`,
                                 {
                                         srcUrl,
                                         alias
@@ -64,31 +64,9 @@ export const MainForm = React.memo(({setSubmissionCompleted, srcUrl, setSrcUrl, 
                 setSrcUrl(event?.target?.value)
         }, []);
 
-        React.useEffect(() => {
-                if (srcUrl) {
-                        // if (/^(http(s):\/\/.)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$/g.test(srcUrl)) {
-                        //         setSrcUrlDirty(true);
-                        //         setSrcUrlValidationMsg('The long URL is not in a valid format');
-                        //         return;
-                        // }
-                }
-
-                setSrcUrlDirty(false);
-                setSrcUrlValidationMsg('');
-        }, [srcUrl]);
-
         const aliasOnChange = React.useCallback((event) => {
                 setAlias(event?.target?.value)
         }, []);
-
-        React.useEffect(() => {
-                if (alias) {
-                        
-                }
-
-                setAliasDirty(false);
-                setAliasValidationMsg('');
-        }, [alias]);
 
         return (
                 <div className='container' style={{ maxWidth: 500 }}>
