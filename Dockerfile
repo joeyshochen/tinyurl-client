@@ -1,5 +1,11 @@
 FROM node:alpine3.18 as build
 
+# Declare build time environment variables
+ARG PROD_ENV_URL
+
+# Set default values for environment variables
+ENV PROD_ENV_URL=$PROD_ENV_URL
+
 #Build App
 WORKDIR /App
 COPY package.json .

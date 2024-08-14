@@ -25,6 +25,6 @@ jobs:
       - name: Pull image from docker hub
         run: docker pull joeyschen/tinyurl-client:latest
       - name: Delete old container
-        run: docker rm -f $(docker ps -aq) 
+        run: docker rm -f tinyurl-container-client
       - name: Run docker container
-        run: docker run -d -p 4000:4000 --name tinyurl-container -e MONGO_PASSWORD='${{ secrets.MONGODB_PASSWORD }}' joeyschen/tinyurl
+        run: docker run -d -p 3000:80 --name tinyurl-container-client joeyschen/tinyurl-client
