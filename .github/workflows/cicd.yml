@@ -1,0 +1,30 @@
+name: Deploy TinyUrl App
+on:
+  push:
+    branches:
+      - master
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v4
+      - name: Login to docker hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Docker Image
+        run: docker build -t joeyschen/tinyurl-client  .
+      - name: Publish image to docker hub
+        run: docker push joeyschen/tinyurl-client:latest
+    
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Pull image from docker hub
+        run: docker pull joeyschen/tinyurl-client:latest
+      - name: Delete old container
+        run: docker rm -f $(docker ps -aq) 
+      - name: Run docker container
+        run: docker run -d -p 4000:4000 --name tinyurl-container -e MONGO_PASSWORD='${{ secrets.MONGODB_PASSWORD }}' joeyschen/tinyurl
